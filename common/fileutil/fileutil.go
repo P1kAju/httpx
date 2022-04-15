@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"regexp"
 
+	"github.com/P1kAju/httpx/common/stringz"
 	"github.com/projectdiscovery/fileutil"
-	"github.com/projectdiscovery/httpx/common/stringz"
 )
 
 // HasStdin determines if the user has piped input

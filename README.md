@@ -15,9 +15,9 @@
 </p>
 
 <p align="center">
-  <a href="#features">Features</a> •
-  <a href="#installation-instructions">Installation</a> •
-  <a href="#usage">Usage</a> •
+  <a href="#features">特点</a> •
+  <a href="#installation-instructions">安装</a> •
+  <a href="#usage">使用</a> •
   <a href="#running-httpx">Running httpx</a> •
   <a href="#-notes">Notes</a> •
   <a href="https://discord.gg/projectdiscovery">Join Discord</a>
@@ -26,6 +26,7 @@
 
 httpx is a fast and multi-purpose HTTP toolkit allow to run multiple probers using [retryablehttp](https://github.com/projectdiscovery/retryablehttp-go) library, it is designed to maintain the result reliability with increased threads.
 
+@httpx中文版 @朋于厌
 # Features
 
 <h1 align="center">
@@ -33,12 +34,12 @@ httpx is a fast and multi-purpose HTTP toolkit allow to run multiple probers usi
   <br>
 </h1>
 
- - Simple and modular code base making it easy to contribute.
- - Fast And fully configurable flags to probe multiple elements.
- - Supports multiple HTTP based probings.
- - Smart auto fallback from https to http as default. 
- - Supports hosts, URLs and CIDR as input.
- - Handles edge cases doing retries, backoffs etc for handling WAFs.
+- 简单和模块化的代码库，使其易于贡献。
+- 快速和完全可配置的标志来探测多个元素。
+- 支持多种基于HTTP的探测。
+- 智能的自动回退，从https到http作为默认。
+- 支持主机、URLs和CIDR作为输入。
+- 处理边缘情况，如重试、回退等，以处理WAFs。
 
 ### Supported probes:-
 
@@ -65,7 +66,11 @@ httpx is a fast and multi-purpose HTTP toolkit allow to run multiple probers usi
 httpx requires **go1.17** to install successfully. Run the following command to get the repo - 
 
 ```sh
-go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
+go install -v github.com/P1kAju/httpx/cmd/httpx@latest
+```
+
+```sh
+▶ git clone https://github.com/P1kAju/httpx.git;cd httpx;go mod tidy;cd cmd/httpx; go build; mv httpx /usr/local/bin/; httpx -version
 ```
 
 # Usage
@@ -78,125 +83,157 @@ This will display help for the tool. Here are all the switches it supports.
 
 
 ```console
+httpx是一个快速和多用途的HTTP工具包，允许使用retryablehttp库运行多个探测器.
+
 Usage:
-  ./httpx [flags]
+  C:\Users\ancient\Documents\code\httpx\cmd\httpx\httpx.exe [flags]
 
 Flags:
 INPUT:
-   -l, -list string      input file containing list of hosts to process
-   -rr, -request string  file containing raw request
+   -l, -list string      待处理的目标列表文件
+   -rr, -request string  原始请求文件
 
-PROBES:
-   -sc, -status-code     display response status-code
-   -cl, -content-length  display response content-length
-   -ct, -content-type    display response content-type
-   -location             display response redirect location
-   -favicon              display mmh3 hash for '/favicon.ico' file
-   -hash string          display response body hash (supported: md5,mmh3,simhash,sha1,sha256,sha512)
-   -jarm                 display jarm fingerprint hash
-   -rt, -response-time   display response time
-   -lc, -line-count      display response body line count
-   -wc, -word-count      display response body word count
-   -title                display page title
-   -server, -web-server  display server name
-   -td, -tech-detect     display technology in use based on wappalyzer dataset
-   -method               display http request method
-   -websocket            display server using websocket
+PROBES 获取 & 输出:
+   -sc, -status-code     响应-状态代码
+   -cl, -content-length  响应-内容长度
+   -ct, -content-type    响应-内容类型
+   -location             响应重定向位置
+   -favicon              '/favicon.ico' 文件的mmh3哈希值
+   -hash string          哈希值（支持：MD5,MMH3,SIMHash,SHA1,SHA256,SHA512）。
+   -jarm                 jarm指纹哈希值
+   -rt, -response-time   响应时间
+   -lc, -line-count      响应正文行数
+   -wc, -word-count      响应body字数
+   -title                页面标题
+   -server, -web-server  display server
+   -td, -tech-detect     基于Wappalyzer获取指纹
+   -method               http请求方法
+   -websocket            利用websocket获取服务
    -ip                   display host ip
    -cname                display host cname
    -asn                  display host asn information
    -cdn                  display cdn in use
-   -probe                display probe status
+   -probe                显示探头状态
 
 MATCHERS:
-   -mc, -match-code string         match response with specified status code (-mc 200,302)
-   -ml, -match-length string       match response with specified content length (-ml 100,102)
-   -mlc, -match-line-count string  match response body with specified line count (-mlc 423,532)
-   -mwc, -match-word-count string  match response body with specified word count (-mwc 43,55)
-   -mfc, -match-favicon string[]   match response with specified favicon hash (-mfc 1494302000)
-   -ms, -match-string string       match response with specified string (-ms admin)
-   -mr, -match-regex string        match response with specified regex (-mr admin)
+   -mc, -match-code string         匹配具有指定状态代码的响应 (-mc 200,302)
+   -ml, -match-length string       匹配指定内容长度的响应 (-ml 100,102)
+   -mlc, -match-line-count string  匹配指定行数的响应 (-mlc 423,532)
+   -mwc, -match-word-count string  匹配指定字数的响应 (-mwc 43,55)
+   -mfc, -match-favicon string[]   匹配指定的favicon哈希值响应 (-mfc 1494302000)
+   -ms, -match-string string       用指定的字符串匹配响应 (-ms admin)
+   -mr, -match-regex string        用正则匹配响应 (-mr admin)
 
 EXTRACTOR:
-   -er, -extract-regex string  display response content for specified regex
+   -er, -extract-regex string  显示指定的regex的响应内容
 
 FILTERS:
-   -fc, -filter-code string         filter response with specified status code (-fc 403,401)
-   -fl, -filter-length string       filter response with specified content length (-fl 23,33)
-   -flc, -filter-line-count string  filter response body with specified line count (-flc 423,532)
-   -fwc, -filter-word-count string  filter response body with specified word count (-fwc 423,532)
-   -ffc, -filter-favicon string[]   filter response with specified favicon hash (-mfc 1494302000)
-   -fs, -filter-string string       filter response with specified string (-fs admin)
-   -fe, -filter-regex string        filter response with specified regex (-fe admin)
+   -fc, -filter-code string         过滤指定状态代码的响应 (-fc 403,401)
+   -fl, -filter-length string       过滤指定内容长度的响应 (-fl 23,33)
+   -flc, -filter-line-count string  过滤指定行数的响应 (-flc 423,532)
+   -fwc, -filter-word-count string  过滤指定字数的响应 (-fwc 423,532)
+   -ffc, -filter-favicon string[]   过滤指定的favicon哈希值响应 (-mfc 1494302000)
+   -fs, -filter-string string       用指定的字符串来过滤响应 (-fs admin)
+   -fe, -filter-regex string        用指定的正则过滤响应 (-fe admin)
 
 RATE-LIMIT:
-   -t, -threads int              number of threads to use (default 50)
-   -rl, -rate-limit int          maximum requests to send per second (default 150)
-   -rlm, -rate-limit-minute int  maximum number of requests to send per minute
+   -t, -threads int              线程数 (default 50)
+   -rl, -rate-limit int          每秒可发送的最大请求 (default 150)
+   -rlm, -rate-limit-minute int  每分钟发送的最大请求数
 
 MISCELLANEOUS:
-   -pa, -probe-all-ips  probe all the ips associated with same host
-   -p, -ports string[]  ports to probe (nmap syntax: eg 1,2-10,11)
-   -path string         path or list of paths to probe (comma-separated, file)
+   -pa, -probe-all-ips  探测与同一主机相关的所有ips
+   -p, -ports string[]  探测端口 (nmap syntax: eg 1,2-10,11)
+   -path string         探测的路径或路径列表 (comma-separated, file)
    -tls-probe           send http probes on the extracted TLS domains (dns_name)
    -csp-probe           send http probes on the extracted CSP domains
    -tls-grab            perform TLS(SSL) data grabbing
-   -pipeline            probe and display server supporting HTTP1.1 pipeline
-   -http2               probe and display server supporting HTTP2
-   -vhost               probe and display server supporting VHOST
+   -pipeline            探测和显示 server supporting HTTP1.1 pipeline
+   -http2               探测和显示 server supporting HTTP2
+   -vhost               探测和显示 server supporting VHOST
 
 OUTPUT:
-   -o, -output string                file to write output results
-   -sr, -store-response              store http response to output directory
-   -srd, -store-response-dir string  store http response to custom directory
-   -csv                              store output in csv format
-   -json                             store output in JSONL(ines) format
-   -irr, -include-response           include http request/response in JSON output (-json only)
-   -include-chain                    include redirect http chain in JSON output (-json only)
-   -store-chain                      include http redirect chain in responses (-sr only)
+   -o, -output string                输出结果(必要的)
+   -sr, -store-response              http响应包到输出目录
+   -srd, -store-response-dir string  http响应包到自定义目录
+   -html                             以html格式存储输出
+   -csv                              以csv格式存储输出
+   -json                             以JSONL(ines)格式存储输出。
+   -irr, -include-response           输出http请求/响应的内容到JSON文件 (-json only)
+   -include-chain                    输出请求重定向内容到JSON文件 (-json only)
+   -store-chain                      输出请求重定向内容到文件 (-sr only)
 
 CONFIGURATIONS:
-   -r, -resolvers string[]       list of custom resolver (file or comma separated)
-   -allow string[]               allowed list of IP/CIDR's to process (file or comma separated)
-   -deny string[]                denied list of IP/CIDR's to process (file or comma separated)
-   -random-agent                 Enable Random User-Agent to use (default true)
-   -H, -header string[]          custom http headers to send with request
+   -r, -resolvers string[]       自定义解析器列表 (file or comma separated)
+   -allow string[]               允许处理的IP/URl的列表 (file or comma separated)
+   -deny string[]                禁止处理的IP/URl的列表 (file or comma separated)
+   -random-agent                 启用随机user-agent (默认开启) (default true)
+   -H, -header string[]          自定义请求头 (-H Cookie:k=v)
    -http-proxy, -proxy string    http proxy to use (eg http://127.0.0.1:8080)
-   -unsafe                       send raw requests skipping golang normalization
-   -resume                       resume scan using resume.cfg
-   -fr, -follow-redirects        follow http redirects
-   -maxr, -max-redirects int     max number of redirects to follow per host (default 10)
-   -fhr, -follow-host-redirects  follow redirects on the same host
+   -unsafe                       发送原始请求，跳过golang的规范化处理
+   -resume                       使用 resume.cfg 恢复扫描
+   -fr, -follow-redirects        遵循http重定向
+   -maxr, -max-redirects int     最大重定向数 (default 10)
+   -fhr, -follow-host-redirects  跟随host重定向
    -vhost-input                  get a list of vhosts as input
-   -x string                     request methods to probe, use 'all' to probe all HTTP methods
-   -body string                  post body to include in http request
-   -s, -stream                   stream mode - start elaborating input targets without sorting
-   -sd, -skip-dedupe             disable dedupe input items (only used with stream mode)
-   -ldp, -leave-default-ports    leave default http/https ports in host header (eg. http://host:80 - https//host:443)
+   -x string                     使用所有的HTTP方法探测
+   -body string                  http请求正文
+   -s, -stream                   顺序探测模式
+   -sd, -skip-dedupe             禁用重复计算的输入项目 (only used with stream mode)
+   -ldp, -leave-default-ports    header保留默认http/https端口 (eg. http://host:80 - https//host:443
 
 DEBUG:
-   -debug                    display request/response content in cli
-   -debug-req                display request content in cli
-   -debug-resp               display response content in cli
-   -version                  display httpx version
-   -stats                    display scan statistic
-   -silent                   silent mode
-   -v, -verbose              verbose mode
-   -si, -stats-interval int  number of seconds to wait between showing a statistics update (default: 5)
-   -nc, -no-color            disable colors in cli output
+   -debug                    在终端中显示请求/响应的内容
+   -debug-req                在终端中显示请求内容
+   -debug-resp               在终端中显示响应内容
+   -version                  显示 httpx 版本
+   -stats                    显示扫描统计信息
+   -silent                   静默模式
+   -v, -verbose              详细模式
+   -si, -stats-interval int  显示统计资料更新之间的等待秒数 (default: 5)
+   -nc, -no-color            禁用终端输出颜色
 
-OPTIMIZATIONS:
-   -nf, -no-fallback                  display both probed protocol (HTTPS and HTTP)
-   -nfs, -no-fallback-scheme          probe with protocol scheme specified in input 
-   -maxhr, -max-host-error int        max error count per host before skipping remaining path/s (default 30)
-   -ec, -exclude-cdn                  skip full port scans for CDNs (only checks for 80,443)
-   -retries int                       number of retries
-   -timeout int                       timeout in seconds (default 5)
-   -rsts, -response-size-to-save int  max response size to save in bytes (default 2147483647)
-   -rstr, -response-size-to-read int  max response size to read in bytes (default 2147483647)
+OPTIMIZATIONS & 优化:
+   -nf, -no-fallback                  侦察http/https协议 (HTTPS and HTTP)
+   -nfs, -no-fallback-scheme          指定协议方法进行侦察
+   -maxhr, -max-host-error int        在跳过剩余路径之前，每个主机的最大错误数 (default 30)
+   -ec, -exclude-cdn                  跳过CDN端口扫描 (only checks for 80,443)
+   -retries int                       重试次数 (-retries 2)
+   -timeout int                       超时, 以秒为单位 (default: 5  -timeout 10) (default 5)
+   -rsts, -response-size-to-save int  保存的最大响应大小 (字节) (default 2147483647)
+   -rstr, -response-size-to-read int  读取的最大响应大小 (字节) (default 2147483647)
 ```
 
 # Running httpX
+
+### 输出到html文件
+将httpx处理结果以html文件形式展示。
+```console
+./httpx -l .\1.txt -o 1.html -html -location  -td -title -status-code -probe  -cdn  -http2
+
+
+    __    __  __       _  __
+   / /_  / /_/ /_____ | |/ /
+  / __ \/ __/ __/ __ \|   /
+ / / / / /_/ /_/ /_/ /   |
+/_/ /_/\__/\__/ .___/_/|_|
+             /_/              v1.2.1
+
+                projectdiscovery.io
+
+Use with caution. You are responsible for your actions.
+Developers assume no liability and are not responsible for any misuse or damage.
+https://securitytrails.com [SUCCESS] [403] [] [Please Wait... | Cloudflare] [http2] [cloudflare] [Cloudflare,hCaptcha]
+https://p1kaju.github.io [SUCCESS] [200] [] [A-Team@P1Kaju's blog] [http2] [GitHub Pages,Jekyll,Ruby on Rails]
+https://x.threatbook.cn [SUCCESS] [200] [] [微步在线X情报社区-威胁情报查询_威胁分析平台_开放社区] [pipeline] [http2] [Nginx]
+```
+<img src="static/httpx-html.png">
+
+[HTML输出DEMO](https://output.jsbin.com/rarukojopa)
+
+- 表格自动排序
+- 内容过滤器
+
 
 ### URL Probe
 

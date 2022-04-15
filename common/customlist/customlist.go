@@ -1,6 +1,6 @@
 package customlist
 
-import "github.com/projectdiscovery/httpx/common/fileutil"
+import "github.com/P1kAju/httpx/common/fileutil"
 
 const maxRecursion = 10
 

@@ -529,8 +529,118 @@ func (r *Runner) RunEnumeration() {
 			if err != nil {
 				gologger.Fatal().Msgf("Could not create output file '%s': %s\n", r.options.Output, err)
 			}
-			defer f.Close() //nolint
+
+			if r.options.HTMLOutput {
+				html_header := HTMLHeader(r.options)
+				//gologger.Silent().Msgf("%s\n", html_header)
+				if f != nil {
+					f.WriteString(html_header + "\n")
+				}
+			}
 		}
+		for resp := range output {
+			if resp.err != nil {
+				gologger.Debug().Msgf("Failed '%s': %s\n", resp.URL, resp.err)
+			}
+			if resp.str == "" {
+				continue
+			}
+
+			// apply matchers and filters
+			if len(r.options.filterStatusCode) > 0 && slice.IntSliceContains(r.options.filterStatusCode, resp.StatusCode) {
+				continue
+			}
+			if len(r.options.filterContentLength) > 0 && slice.IntSliceContains(r.options.filterContentLength, resp.ContentLength) {
+				continue
+			}
+			if r.options.filterRegex != nil && r.options.filterRegex.MatchString(resp.raw) {
+				continue
+			}
+			if r.options.OutputFilterString != "" && strings.Contains(strings.ToLower(resp.raw), strings.ToLower(r.options.OutputFilterString)) {
+				continue
+			}
+			if len(r.options.matchStatusCode) > 0 && !slice.IntSliceContains(r.options.matchStatusCode, resp.StatusCode) {
+				continue
+			}
+			if len(r.options.matchContentLength) > 0 && !slice.IntSliceContains(r.options.matchContentLength, resp.ContentLength) {
+				continue
+			}
+			if r.options.matchRegex != nil && !r.options.matchRegex.MatchString(resp.raw) {
+				continue
+			}
+			if r.options.OutputMatchString != "" && !strings.Contains(strings.ToLower(resp.raw), strings.ToLower(r.options.OutputMatchString)) {
+				continue
+			}
+			// 结果预览
+			row := resp.str
+			gologger.Silent().Msgf("%s\n", row)
+
+			if f != nil {
+				u := td("<a href='" + resp.URL + "' title='" + resp.URL + "' target='_blank'>" + resp.URL + "</a>")
+				ip := "<td title='" + strings.Join(resp.A, "&NewLine;") + "'>" + resp.Host + "</td>"
+				status := td(strconv.Itoa(resp.StatusCode))
+				cl := td(strconv.Itoa(resp.ContentLength))
+				title := "<td title='" + resp.Title + "'>" + resp.Title + "</td>"
+				ws := "<td title='" + resp.WebServer + "'>" + resp.WebServer + "</td>"
+				tr := "<tr>" + u + ip
+				if r.options.OutputMethod {
+					tr = tr + td(resp.Method)
+				}
+				if r.options.OutputCName {
+					if len(resp.CNAMEs) != 0 {
+						cname := "<td title='" + strings.Join(resp.CNAMEs, "&NewLine;") + "'>" + resp.CNAMEs[len(resp.CNAMEs)-1] + "</td>"
+						tr = tr + cname
+					} else {
+						tr = tr + td("")
+					}
+				}
+				tr = tr + status + cl + title
+				if r.options.TechDetect {
+					tech := "<td title='" + strings.Join(resp.Technologies, ", ") + "'>" + strings.Join(resp.Technologies, ",") + "</td>"
+					tr = tr + tech
+				}
+				tr = tr + ws
+				if r.options.OutputContentType {
+					tr = tr + td(resp.ContentType)
+				}
+				if r.options.OutputCDN {
+					var cdn string
+					if resp.CDN {
+						cdn = "✔"
+					} else {
+						cdn = ""
+					}
+					tech := td(cdn)
+					tr = tr + tech
+				}
+				if r.options.HTTP2Probe {
+					var http2 string
+					if resp.HTTP2 {
+						http2 = "✔"
+					} else {
+						http2 = ""
+					}
+					tr = tr + td(http2)
+				}
+				if r.options.Favicon {
+					tr = tr + td(resp.FavIconMMH3)
+				}
+
+				// error message
+				//if resp.Error != "" {
+				//	tr = tr + td(resp.Error)
+				//}
+				if !r.options.FollowRedirects {
+					tr = tr + td(resp.Location)
+				}
+				tr = tr + "</tr>"
+				f.WriteString(tr + "\n")
+			} else {
+				f.WriteString(row + "\n")
+			}
+		}
+
+		// 输出CSV格式文件
 		if r.options.CSVOutput {
 			header := Result{}.CSVHeader()
 			gologger.Silent().Msgf("%s\n", header)
@@ -1293,7 +1403,7 @@ retry:
 	}
 	jarmhash := ""
 	if r.options.Jarm {
-		jarmhash = hashes.Jarm(fullURL,r.options.Timeout)
+		jarmhash = hashes.Jarm(fullURL, r.options.Timeout)
 		builder.WriteString(" [")
 		if !scanopts.OutputWithNoColor {
 			builder.WriteString(aurora.Magenta(jarmhash).String())
@@ -1480,6 +1590,202 @@ type Result struct {
 	Jarm             string              `json:"jarm,omitempty" csv:"jarm"`
 }
 
+// HTML the result
+func HTMLHeader(r *Options) string {
+	script := `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>httpx</title>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).on('click', 'th', function() {
+            var table = $(this).parents('table').eq(0);
+            var rows = table.find('tr:gt(0)').toArray().sort(comparer($(this).index()));
+            this.asc = !this.asc;
+            if (!this.asc) {
+                rows = rows.reverse();
+            }
+            table.children('tbody').empty().html(rows);
+        });
+
+        function comparer(index) {
+            return function(a, b) {
+                var valA = getCellValue(a, index),
+                    valB = getCellValue(b, index);
+                return $.isNumeric(valA) && $.isNumeric(valB) ?
+                    valA - valB : valA.localeCompare(valB);
+            };
+        }
+
+        function getCellValue(row, index) {
+            return $(row).children('td').eq(index).text();
+        }
+
+
+        function onSearch(filed,contain){
+        var oEl = document.getElementById('test');
+        var oInp = document.getElementById('inp');
+        var c = 0;
+        setTimeout(function(){
+        var rows = oEl.rows.length;
+        var inpVal = oInp.value;
+        if (inpVal.trim()!=""){
+        for(var i=1;i<rows;i++){
+        var cellText = oEl.rows[i].cells[filed].innerHTML;//cells[2] is Status code
+        if (contain == "1"){
+        if(cellText.includes(inpVal)){
+        c++;
+        oEl.rows[i].style.display='';
+    }else{
+        oEl.rows[i].style.display='none';
+    }
+    }else{
+        if(!cellText.includes(inpVal)){
+        c++;
+        oEl.rows[i].style.display='';
+    }else{
+        oEl.rows[i].style.display='none';
+    }
+    }
+
+    }
+    }else{
+        for(var i=1;i<rows;i++){
+        c++;
+        oEl.rows[i].style.display='';
+    }
+    }
+        var count = document.getElementById('count');
+        count.innerHTML=" "+c+" rows ";
+    },200)
+        console.log(oEl.rows.length-1);
+    }
+        window.onload = function(){
+        onSearch();
+        var thr = document.getElementById('test');
+        var slt = document.getElementsByTagName("select")[0];
+        var opt="";
+        for(var i =0;i<thr.rows[0].cells.length;i++){
+        opt += " <option value ="+i+">" + thr.rows[0].cells[i].innerHTML + "</option>"
+    }
+        slt.innerHTML=opt;
+
+    }
+
+        function fresh(){
+        onSearch(document.getElementsByTagName('select')[0].selectedOptions[0].value,document.getElementsByTagName('select')[1].selectedOptions[0].value);
+    }
+    </script>
+    <style>
+        input,select{
+            border: 1px solid #C1DAD7;
+            padding: 4px 0px;
+            border-radius: 3px;
+            padding-left:5px;
+        }
+        *{
+            padding: 0;
+            margin: 0;
+            border: none;
+        }
+        body {
+            font: normal 11px  "Trebuchet MS", Verdana, Arial, Helvetica, sans-serif;
+            color: #4f6b72;
+        }
+        a {
+            color: #c75f3e;
+        }
+        table{
+            margin: 0 auto;
+            margin-top: 45px;
+            border-collapse: collapse;
+            border: 1px solid #C1DAD7;
+        }
+        tr:nth-child(odd){
+            background-color: #eeeeee;
+        }
+        tr:hover{
+            background-color: #fffeee;
+        }
+        td,th {
+            border-right: 1px solid #C1DAD7;
+            border-top: 1px solid #C1DAD7;
+            font-size: 15px;
+            padding: 6px 6px 0px 15px;
+            color: #4f6b72;
+            white-space: nowrap;
+            max-width: 270px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #filter-bar{
+            padding: 3px 50px;
+            position: fixed;
+            top:1px;
+            background-color: #c1dacb;
+            /*background-color: #C1DAD7;*/
+            opacity: 0.9;
+            width: 100%;
+            /*box-shadow: 0 0 1px 0px rgb(0 0 0 / 30%), 0 0 6px 2px rgb(0 0 0 / 15%);*/
+            box-shadow: 10px 2px 5px #C1DAD7;
+        }
+    </style>
+</head>
+<body>
+<!--搜索框-->
+<div id="filter-bar">
+    <span>
+        <select onchange="fresh()"></select>
+    </span>
+    <span>
+        <select onchange="fresh()">
+        <option value="1">包含</option>
+        <option value="0">不包含</option>
+        </select>
+    </span>
+    <span>
+        <input type="text" id="inp" value="" oninput="fresh()" />
+    </span>
+    <span id="count"></span>
+</div>
+<!--表单-->`
+	thr := "<table id=\"test\" class=\"display dataTable cell-border\" ><thead><tr>"
+	thr = thr + "<th>URL</th><th id=ipaddress sType=string-ip>IP</th>"
+	if r.OutputMethod {
+		thr = thr + th("Method")
+	}
+	if r.OutputCName {
+		thr = thr + th("CNAME")
+	}
+	thr = thr + "<th>Status Code</th><th>Content-Length</th><th>Title</th>"
+	if r.TechDetect {
+		thr = thr + th("Technology")
+	}
+	thr = thr + th("Web Server")
+	if r.OutputContentType {
+		thr = thr + th("Content-Type")
+	}
+	if r.OutputCDN {
+		thr = thr + th("CDN")
+	}
+	if r.HTTP2Probe {
+		thr = thr + th("HTTP2")
+	}
+	if r.Favicon {
+		thr = thr + th("Favicon Hash")
+	}
+	if !r.FollowRedirects {
+		thr = thr + th("Location")
+	}
+	thr = thr + "</tr></thead><tbody>"
+	return script + thr
+}
+
 // JSON the result
 func (r Result) JSON(scanopts *scanOptions) string { //nolint
 	if scanopts != nil && len(r.ResponseBody) > scanopts.MaxResponseBodySizeToSave {
@@ -1591,4 +1897,11 @@ func getDNSData(hp *httpx.HTTPX, hostname string) (ips, cnames []string, err err
 	ips = append(ips, dnsData.AAAA...)
 	cnames = dnsData.CNAME
 	return
+}
+func td(s string) string {
+	return "<td>" + s + "</td>"
+}
+
+func th(s string) string {
+	return "<th>" + s + "</th>"
 }

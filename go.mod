@@ -1,4 +1,4 @@
-module github.com/projectdiscovery/httpx
+module github.com/P1kAju/httpx
 
 go 1.17
 
@@ -64,6 +64,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/projectdiscovery/blackrock v0.0.0-20210415162320-b38689ae3a2e // indirect
+	github.com/projectdiscovery/httpx v1.2.1 // indirect
 	github.com/projectdiscovery/networkpolicy v0.0.1 // indirect
 	github.com/projectdiscovery/reflectutil v0.0.0-20210804085554-4d90952bf92f // indirect
 	github.com/projectdiscovery/retryabledns v1.0.13 // indirect
