@@ -227,7 +227,7 @@ https://securitytrails.com [SUCCESS] [403] [] [Please Wait... | Cloudflare] [htt
 https://p1kaju.github.io [SUCCESS] [200] [] [A-Team@P1Kaju's blog] [http2] [GitHub Pages,Jekyll,Ruby on Rails]
 https://x.threatbook.cn [SUCCESS] [200] [] [微步在线X情报社区-威胁情报查询_威胁分析平台_开放社区] [pipeline] [http2] [Nginx]
 ```
-<img src="static/httpx-html.png">
+![](.\static\httpx-html.png)
 
 [HTML输出DEMO](https://output.jsbin.com/rarukojopa)
 
