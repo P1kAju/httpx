@@ -86,7 +86,7 @@ This will display help for the tool. Here are all the switches it supports.
 httpx是一个快速和多用途的HTTP工具包，允许使用retryablehttp库运行多个探测器.
 
 Usage:
-  C:\Users\ancient\Documents\code\httpx\cmd\httpx\httpx.exe [flags]
+  .\httpx [flags]
 
 Flags:
 INPUT:
@@ -227,7 +227,7 @@ https://securitytrails.com [SUCCESS] [403] [] [Please Wait... | Cloudflare] [htt
 https://p1kaju.github.io [SUCCESS] [200] [] [A-Team@P1Kaju's blog] [http2] [GitHub Pages,Jekyll,Ruby on Rails]
 https://x.threatbook.cn [SUCCESS] [200] [] [微步在线X情报社区-威胁情报查询_威胁分析平台_开放社区] [pipeline] [http2] [Nginx]
 ```
-![](.\static\httpx-html.png)
+![](https://raw.githubusercontent.com/P1kAju/httpx/master/static/httpx-html.png)
 
 [HTML输出DEMO](https://output.jsbin.com/rarukojopa)
 
